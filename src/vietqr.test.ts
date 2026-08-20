@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { qrPng } from "./qr";
 import { buildVietQR, parseAmount } from "./vietqr";
 
 describe("buildVietQR", () => {
@@ -27,6 +28,13 @@ describe("buildVietQR", () => {
     const p = buildVietQR({ bin: "970416", acc: "0123456789" });
     expect(p.includes("010211")).toBe(true);
     expect(p.includes("53037045802VN")).toBe(true);
+  });
+});
+
+describe("qrPng", () => {
+  it("emits a PNG signature", async () => {
+    const p = await qrPng("hello");
+    expect([...p.slice(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
   });
 });
 

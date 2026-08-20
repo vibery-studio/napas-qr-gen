@@ -1,4 +1,14 @@
 import { encode } from "uqr";
+import { matrixToPng } from "./png";
+
+export function qrMatrix(text: string) {
+  return encode(text, { ecc: "M", border: 4 });
+}
+
+export async function qrPng(text: string, scale = 4): Promise<Uint8Array> {
+  const { data } = qrMatrix(text);
+  return matrixToPng(data, scale);
+}
 
 export function qrSvg(
   text: string,

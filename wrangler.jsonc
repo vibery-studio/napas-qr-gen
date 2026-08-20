@@ -6,5 +6,6 @@
   "observability": {
     "enabled": true,
     "logs": { "head_sampling_rate": 1 }
-  }
+  },
+  "routes": [{ "pattern": "bankqr.vibery.app", "custom_domain": true }]
 }

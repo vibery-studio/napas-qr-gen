@@ -2,7 +2,7 @@ import { banks, resolveBank } from "./banks";
 import { banksCsv, banksMd } from "./banks-files";
 import { stripVn } from "./memo";
 import { agentPrompt } from "./prompt";
-import { qrSvg } from "./qr";
+import { qrPng, qrSvg } from "./qr";
 import { formPage, sharePage } from "./ui";
 import { buildVietQR, parseAmount } from "./vietqr";
 
@@ -76,6 +76,18 @@ export default {
 
       if (url.pathname === "/img") {
         const t = transferFrom(url);
+        const format = (url.searchParams.get("format") || "").toLowerCase();
+        const wantPng = format === "png" || request.headers.get("accept")?.includes("image/png");
+        if (wantPng) {
+          const png = await qrPng(t.payload);
+          return new Response(png, {
+            headers: {
+              "content-type": "image/png",
+              "cache-control": CACHE,
+              "access-control-allow-origin": "*",
+            },
+          });
+        }
         const svg = qrSvg(t.payload);
         return text(svg, "image/svg+xml; charset=utf-8", { "cache-control": CACHE });
       }

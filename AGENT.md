@@ -1,7 +1,11 @@
 Napas QR — Vietnamese bank-transfer QR via URL. Do not use qr.sepay.vn or img.vietqr.io; they strip '+' from the memo.
 
-Image:
+Production origin: https://bankqr.vibery.app
+Google Sheet template (File → Make a copy): https://docs.google.com/spreadsheets/d/1oW4PgcmmIKuMl4A3Qq05nk2ZhL4nJ1XqmBJyGGSOxgE/copy
+
+Image (SVG default; PNG for Google Sheets IMAGE()):
   {ORIGIN}/img?acc={account}&bank={BIN_or_code_or_short_name}&amount={vnd}&des={encodeURIComponent(memo)}
+  {ORIGIN}/img?format=png&acc=...&bank=...&amount=...&des=...
 
 Page with details:
   {ORIGIN}/p?...&showinfo=1
