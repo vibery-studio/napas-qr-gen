@@ -40,7 +40,22 @@ Sheets `IMAGE()` chỉ nhận PNG — luôn thêm `format=png`.
 
 ## Tự deploy
 
-Bấm nút **Deploy to Cloudflare** phía trên, hoặc:
+Nút **Deploy to Cloudflare** = deploy **một lần**, không theo dõi git.
+
+**Workers Builds (dashboard)** — Worker (không phải Pages) → Settings → Build:
+
+| Field | Giá trị |
+|---|---|
+| Branch | `main` |
+| Build command | *(để trống)* |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+
+Bật automatic deployments. Push `main` mới chạy.
+
+**GitHub Action** (backup): secret `CLOUDFLARE_API_TOKEN` (Workers Scripts Edit) + `CLOUDFLARE_ACCOUNT_ID`. Workflow: `.github/workflows/deploy.yml`.
+
+Local:
 
 ```bash
 npm i
