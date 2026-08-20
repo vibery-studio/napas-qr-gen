@@ -38,29 +38,23 @@ https://bankqr.vibery.app/img?format=png&acc=0123456789&bank=BIDV&amount=100000&
 
 Sheets `IMAGE()` chỉ nhận PNG — luôn thêm `format=png`.
 
-## Tự deploy
+## Deploy
 
-Nút **Deploy to Cloudflare** = deploy **một lần**, không theo dõi git.
+Cloudflare Worker **kết nối GitHub** (Workers Builds). Cloudflare pull `main` — không push từ GitHub Actions.
 
-**Workers Builds (dashboard)** — Worker (không phải Pages) → Settings → Build:
+Settings → Build:
 
 | Field | Giá trị |
 |---|---|
+| Repo | `vibery-studio/napas-qr` |
 | Branch | `main` |
-| Build command | *(để trống)* |
+| Build command | *trống* |
 | Deploy command | `npx wrangler deploy` |
-| Root directory | `/` |
+| Root | `/` |
 
-Bật automatic deployments. Push `main` mới chạy.
+`wrangler.jsonc` → `name: napas-qr`. Tên Worker trên dashboard phải trùng, không thì ra Worker mới. Domain: `bankqr.vibery.app`.
 
-**GitHub Action** (backup): secret `CLOUDFLARE_API_TOKEN` (Workers Scripts Edit) + `CLOUDFLARE_ACCOUNT_ID`. Workflow: `.github/workflows/deploy.yml`.
-
-Local:
-
-```bash
-npm i
-npx wrangler deploy
-```
+Local: `npx wrangler deploy`.
 
 ## Agent
 
