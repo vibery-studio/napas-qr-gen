@@ -1,5 +1,5 @@
 {
-  "no_banks": "52",
+  "no_banks": "56",
   "data": [
     {
       "name": "Ngân hàng TMCP Công thương Việt Nam",
@@ -372,6 +372,34 @@
       "bin": "970446",
       "short_name": "COOPBANK",
       "supported": false
+    },
+    {
+      "name": "TMCP Việt Nam Thịnh Vượng - Ngân hàng số CAKE by VPBank",
+      "code": "CAKE",
+      "bin": "546034",
+      "short_name": "CAKE",
+      "supported": true
+    },
+    {
+      "name": "Ngân hàng số Timo by Ban Viet Bank",
+      "code": "TIMO",
+      "bin": "963388",
+      "short_name": "Timo",
+      "supported": true
+    },
+    {
+      "name": "Ví điện tử MoMo",
+      "code": "momo",
+      "bin": "971025",
+      "short_name": "MoMo",
+      "supported": true
+    },
+    {
+      "name": "Ngân hàng số Lio by OCB (cùng BIN OCB)",
+      "code": "LIOBANK",
+      "bin": "970448",
+      "short_name": "Lio",
+      "supported": true
     }
   ]
 }

@@ -1,10 +1,13 @@
 import { banks, resolveBank } from "./banks";
+import { banksCsv, banksMd } from "./banks-files";
+import { stripVn } from "./memo";
 import { agentPrompt } from "./prompt";
 import { qrSvg } from "./qr";
 import { formPage, sharePage } from "./ui";
 import { buildVietQR, parseAmount } from "./vietqr";
 
 const CACHE = "public, max-age=31536000, immutable";
+const PINK = "#ff2e6a";
 
 function json(data: unknown, status = 200): Response {
   return Response.json(data, { status, headers: { "access-control-allow-origin": "*" } });
@@ -24,7 +27,7 @@ function transferFrom(url: URL) {
   const acc = (url.searchParams.get("acc") || "").trim();
   const bankRaw = (url.searchParams.get("bank") || "").trim();
   const amount = parseAmount(url.searchParams.get("amount"));
-  const des = url.searchParams.get("des") ?? "";
+  const des = stripVn(url.searchParams.get("des") ?? "");
   if (!acc) throw new Error("acc required");
   if (!bankRaw) throw new Error("bank required");
   const bank = resolveBank(bankRaw);
@@ -60,7 +63,15 @@ export default {
         return text(formPage(banks, origin), "text/html; charset=utf-8");
       }
 
-      if (url.pathname === "/banks") return json(banks);
+      if (url.pathname === "/banks" || url.pathname === "/banks.json") return json(banks);
+      if (url.pathname === "/banks.csv") {
+        return text(banksCsv(banks), "text/csv; charset=utf-8", {
+          "content-disposition": 'inline; filename="banks.csv"',
+        });
+      }
+      if (url.pathname === "/banks.md") {
+        return text(banksMd(banks), "text/markdown; charset=utf-8");
+      }
       if (url.pathname === "/prompt") return text(agentPrompt(origin));
 
       if (url.pathname === "/img") {
@@ -73,9 +84,11 @@ export default {
         const t = transferFrom(url);
         const showinfo = url.searchParams.get("showinfo") !== "0";
         const image = imgUrl(origin, url);
+        const ticket = qrSvg(t.payload, { px: 440, dark: "#ffffff", light: PINK });
+        const ticketSrc = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ticket);
         return text(
           sharePage({
-            imgSrc: image,
+            ticketSrc,
             bankLabel: `${t.bank.short_name} · ${t.bank.bin}`,
             acc: t.acc,
             amount: t.amount,

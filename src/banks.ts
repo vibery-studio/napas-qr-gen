@@ -34,6 +34,11 @@ const ALIAS: Record<string, string> = {
   AGR: "970405",
   VBA: "970405",
   AGRIBANK: "970405",
+  CAKE: "546034",
+  TIMO: "963388",
+  MOMO: "971025",
+  LIO: "970448",
+  LIOBANK: "970448",
 };
 
 export const banks: Bank[] = list;
