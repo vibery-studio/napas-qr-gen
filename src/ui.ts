@@ -57,6 +57,11 @@ textarea { min-height: 88px; resize: vertical; }
   border: 0; border-radius: 16px; background: var(--card); color: var(--ink); resize: vertical; white-space: pre; }
 .links { margin: 12px 0 0; font-size: 0.8rem; color: var(--mute); }
 .links a { color: var(--ink); }
+.sheet { margin-top: 28px; background: var(--card); border-radius: 20px; padding: 20px 18px 18px; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+.sheet h2 { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mute); margin: 0 0 10px; font-weight: 600; }
+.sheet p { margin: 0 0 10px; font-size: 0.88rem; color: var(--ink); line-height: 1.45; }
+.sheet p.note { color: var(--mute); font-size: 0.8rem; }
+.sheet .primary { margin-top: 4px; text-decoration: none; display: block; text-align: center; }
 
 .ticket-wrap { margin-top: 8px; }
 .ticket { position: relative; background: var(--pink); color: #fff; border-radius: 32px 32px 0 0; padding: 48px 24px 20px; text-align: center; }
@@ -108,6 +113,12 @@ export function formPage(banks: Bank[], origin: string): string {
     <label class="toggle"><input type="checkbox" name="showinfo" checked> Hiện thông tin trên trang QR</label>
     <button class="primary" type="submit">Tạo QR</button>
   </form>
+  <section class="sheet" aria-labelledby="sheet-label">
+    <h2 id="sheet-label">Google Sheet — QR hàng loạt</h2>
+    <p>File → <strong>Make a copy</strong> trước khi dùng. Tab Banks đã có sẵn trong file (không kéo JSON bên ngoài).</p>
+    <p class="note">Google sẽ cảnh báo “formulas … external parties”. Đó là cột <code>IMAGE()</code> tải PNG QR từ server này — bắt buộc để hiện mã trong ô. Bấm Allow.</p>
+    <a class="primary" href="https://docs.google.com/spreadsheets/d/1oW4PgcmmIKuMl4A3Qq05nk2ZhL4nJ1XqmBJyGGSOxgE/copy">Copy Google Sheet</a>
+  </section>
   <section class="agent" aria-labelledby="agent-label">
     <div class="agent-head">
       <h2 id="agent-label">Agent prompt</h2>

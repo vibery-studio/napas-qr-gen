@@ -6,7 +6,9 @@ Worker tạo mã **VietQR / NAPAS** cho mọi ngân hàng Việt Nam. Nội dung
 
 **Host production:** [https://bankqr.vibery.app](https://bankqr.vibery.app)
 
-**Mẫu Google Sheet** (File → Make a copy): [https://docs.google.com/spreadsheets/d/1oW4PgcmmIKuMl4A3Qq05nk2ZhL4nJ1XqmBJyGGSOxgE/copy](https://docs.google.com/spreadsheets/d/1oW4PgcmmIKuMl4A3Qq05nk2ZhL4nJ1XqmBJyGGSOxgE/copy)
+**Mẫu Google Sheet** (File → Make a copy): [copy tại đây](https://docs.google.com/spreadsheets/d/1oW4PgcmmIKuMl4A3Qq05nk2ZhL4nJ1XqmBJyGGSOxgE/copy)
+
+Cảnh báo Sheets “external parties” = cột `IMAGE()` tải PNG từ worker. Allow. Tab Banks nằm trong file, không import JSON.
 
 ## Dùng
 
