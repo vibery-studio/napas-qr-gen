@@ -1,10 +1,10 @@
 # napas-qr
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/vibery-studio/napas-qr)
+**Production:** [https://bankqr.vibery.app](https://bankqr.vibery.app)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/vibery-studio/napas-qr-gen)
 
 Worker tạo mã **VietQR / NAPAS** cho mọi ngân hàng Việt Nam. Nội dung chuyển khoản giữ nguyên — kể cả dấu `+`. Không phải cổng thanh toán, chỉ sinh QR.
-
-**Host production:** [https://bankqr.vibery.app](https://bankqr.vibery.app)
 
 **Mẫu Google Sheet** (File → Make a copy): [copy tại đây](https://docs.google.com/spreadsheets/d/1oW4PgcmmIKuMl4A3Qq05nk2ZhL4nJ1XqmBJyGGSOxgE/copy)
 
