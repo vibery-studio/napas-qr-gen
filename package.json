@@ -1,0 +1,22 @@
+{
+  "name": "napas-qr",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "uqr": "^0.1.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.57.0"
+  }
+}
