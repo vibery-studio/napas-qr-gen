@@ -46,13 +46,13 @@ Settings → Build:
 
 | Field | Giá trị |
 |---|---|
-| Repo | `vibery-studio/napas-qr` |
+| Repo | `vibery-studio/napas-qr-gen` |
 | Branch | `main` |
 | Build command | *trống* |
 | Deploy command | `npx wrangler deploy` |
 | Root | `/` |
 
-`wrangler.jsonc` → `name: napas-qr`. Tên Worker trên dashboard phải trùng, không thì ra Worker mới. Domain: `bankqr.vibery.app`.
+`wrangler.jsonc` → `name: napas-qr-gen` (trùng Worker trên dashboard). Domain: `bankqr.vibery.app`.
 
 Local: `npx wrangler deploy`.
 

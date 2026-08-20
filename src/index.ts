@@ -23,6 +23,11 @@ function err(message: string, status = 400): Response {
   return json({ error: message }, status);
 }
 
+function asHead(request: Request, res: Response): Response {
+  if (request.method !== "HEAD") return res;
+  return new Response(null, { status: res.status, headers: res.headers });
+}
+
 function transferFrom(url: URL) {
   const acc = (url.searchParams.get("acc") || "").trim();
   const bankRaw = (url.searchParams.get("bank") || "").trim();
@@ -54,25 +59,31 @@ export default {
         return new Response(null, {
           headers: {
             "access-control-allow-origin": "*",
-            "access-control-allow-methods": "GET, OPTIONS",
+            "access-control-allow-methods": "GET, HEAD, OPTIONS",
           },
         });
       }
 
-      if (url.pathname === "/" && request.method === "GET") {
-        return text(formPage(banks, origin), "text/html; charset=utf-8");
+      const read = request.method === "GET" || request.method === "HEAD";
+      if (!read) return err("method not allowed", 405);
+
+      if (url.pathname === "/") {
+        return asHead(request, text(formPage(banks, origin), "text/html; charset=utf-8"));
       }
 
-      if (url.pathname === "/banks" || url.pathname === "/banks.json") return json(banks);
+      if (url.pathname === "/banks" || url.pathname === "/banks.json") return asHead(request, json(banks));
       if (url.pathname === "/banks.csv") {
-        return text(banksCsv(banks), "text/csv; charset=utf-8", {
-          "content-disposition": 'inline; filename="banks.csv"',
-        });
+        return asHead(
+          request,
+          text(banksCsv(banks), "text/csv; charset=utf-8", {
+            "content-disposition": 'inline; filename="banks.csv"',
+          }),
+        );
       }
       if (url.pathname === "/banks.md") {
-        return text(banksMd(banks), "text/markdown; charset=utf-8");
+        return asHead(request, text(banksMd(banks), "text/markdown; charset=utf-8"));
       }
-      if (url.pathname === "/prompt") return text(agentPrompt(origin));
+      if (url.pathname === "/prompt") return asHead(request, text(agentPrompt(origin)));
 
       if (url.pathname === "/img") {
         const t = transferFrom(url);
@@ -80,16 +91,19 @@ export default {
         const wantPng = format === "png" || request.headers.get("accept")?.includes("image/png");
         if (wantPng) {
           const png = await qrPng(t.payload);
-          return new Response(png, {
-            headers: {
-              "content-type": "image/png",
-              "cache-control": CACHE,
-              "access-control-allow-origin": "*",
-            },
-          });
+          return asHead(
+            request,
+            new Response(png, {
+              headers: {
+                "content-type": "image/png",
+                "cache-control": CACHE,
+                "access-control-allow-origin": "*",
+              },
+            }),
+          );
         }
         const svg = qrSvg(t.payload);
-        return text(svg, "image/svg+xml; charset=utf-8", { "cache-control": CACHE });
+        return asHead(request, text(svg, "image/svg+xml; charset=utf-8", { "cache-control": CACHE }));
       }
 
       if (url.pathname === "/p") {
@@ -98,7 +112,9 @@ export default {
         const image = imgUrl(origin, url);
         const ticket = qrSvg(t.payload, { px: 440, dark: "#ffffff", light: PINK });
         const ticketSrc = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ticket);
-        return text(
+        return asHead(
+          request,
+          text(
           sharePage({
             ticketSrc,
             bankLabel: `${t.bank.short_name} · ${t.bank.bin}`,
@@ -110,6 +126,7 @@ export default {
             pageUrl: url.toString(),
           }),
           "text/html; charset=utf-8",
+          ),
         );
       }
 

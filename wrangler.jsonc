@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/wrangler@4.57.0/config-schema.json",
-  "name": "napas-qr",
+  "name": "napas-qr-gen",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-20",
   "observability": {
