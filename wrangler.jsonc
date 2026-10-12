@@ -7,5 +7,6 @@
     "enabled": true,
     "logs": { "head_sampling_rate": 1 }
   },
+  "rules": [{ "type": "Text", "globs": ["**/jsQR.js"], "fallthrough": true }],
   "routes": [{ "pattern": "bankqr.vibery.app", "custom_domain": true }]
 }

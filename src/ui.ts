@@ -76,6 +76,21 @@ textarea { min-height: 88px; resize: vertical; }
 .scallop { height: 14px; background:
   radial-gradient(circle at 12px 0, var(--page) 12px, var(--pink) 12.5px) 0 0 / 24px 14px repeat-x; }
 .meta-block { white-space: pre-wrap; font-size: 0.88rem; font-weight: 500; opacity: .95; margin: 0 0 14px; }
+.drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 180px;
+  border: 2px dashed #d9d9de; border-radius: 20px; background: var(--card); cursor: pointer; text-align: center; padding: 20px;
+  font-size: 0.95rem; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--ink); margin: 0; }
+.drop.over { border-color: var(--pink); }
+.drop small { color: var(--mute); font-weight: 400; font-size: 0.8rem; text-transform: none; letter-spacing: 0; }
+.drop img { max-width: 100%; max-height: 220px; border-radius: 12px; }
+.status { margin: 14px 0 0; font-size: 0.88rem; color: var(--mute); }
+.status.bad { color: #b42318; }
+.rows { margin-top: 18px; background: var(--card); border-radius: 20px; padding: 6px 18px; }
+.row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.row dt { color: var(--mute); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; flex: none; }
+.row dd { margin: 0; text-align: right; font-weight: 600; overflow-wrap: anywhere; white-space: pre-wrap; cursor: copy; }
+.row dd small { display: block; color: var(--mute); font-weight: 400; font-size: 0.78rem; }
+.raw { margin-top: 14px; font: 400 0.72rem/1.4 ui-monospace, Menlo, monospace; word-break: break-all; color: var(--mute); }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
 .actions a, .actions button { display: flex; align-items: center; justify-content: center; gap: 8px;
   background: var(--card); color: var(--ink); text-decoration: none; border: 0; border-radius: 999px;
@@ -125,7 +140,7 @@ export function formPage(banks: Bank[], origin: string): string {
       <button type="button" class="copy" id="copy">Copy</button>
     </div>
     <textarea id="prompt" readonly spellcheck="false">${esc(agentPrompt(origin))}</textarea>
-    <p class="links">Danh sách NH: <a href="/banks.md">banks.md</a> · <a href="/banks.csv">banks.csv</a></p>
+    <p class="links"><a href="/read">Đọc QR chuyển khoản</a> · Danh sách NH: <a href="/banks.md">banks.md</a> · <a href="/banks.csv">banks.csv</a></p>
   </section>
 </div>
 <script>
@@ -272,6 +287,125 @@ document.getElementById('share').onclick = async () => {
   if (navigator.share) { try { await navigator.share({ url: pageUrl, title: 'QR chuyển khoản' }); return; } catch {} }
   try { await navigator.clipboard.writeText(pageUrl); } catch {}
 };
+</script>
+</body></html>`;
+}
+
+export function readPage(): string {
+  return `<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đọc QR chuyển khoản</title>
+  <style>${css}</style>
+</head>
+<body>
+<div class="shell">
+  <a class="back" href="/" aria-label="Quay lại">←</a>
+  <h1>Đọc QR</h1>
+  <p class="lede">Tải ảnh QR chuyển khoản lên để xem ngân hàng, số tài khoản, số tiền, nội dung. Ảnh được đọc ngay trên máy, không gửi lên server.</p>
+  <label class="drop" id="drop">
+    <span id="dropText">Chọn ảnh QR</span>
+    <small>hoặc kéo thả · dán ảnh (Ctrl/⌘+V)</small>
+    <input type="file" id="file" accept="image/*" hidden>
+  </label>
+  <p class="status" id="status"></p>
+  <div id="out"></div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function setStatus(msg, bad) { $('status').textContent = msg; $('status').className = 'status' + (bad ? ' bad' : ''); }
+
+let jsqr;
+async function loadJsqr() {
+  if (jsqr) return jsqr;
+  await new Promise((ok, fail) => { const s = document.createElement('script'); s.src = '/jsqr.js'; s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
+  return (jsqr = window.jsQR);
+}
+
+async function decode(file) {
+  const bmp = await createImageBitmap(file);
+  if ('BarcodeDetector' in window) {
+    try {
+      const hits = await new BarcodeDetector({ formats: ['qr_code'] }).detect(bmp);
+      if (hits.length) return hits[0].rawValue;
+    } catch {}
+  }
+  const fn = await loadJsqr();
+  for (const max of [1600, 800, 2400]) {
+    const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    const r = fn(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'attemptBoth' });
+    if (r) return r.data;
+  }
+  return null;
+}
+
+function row(k, v, sub) {
+  return '<div class="row"><dt>' + k + '</dt><dd title="Bấm để copy" data-copy="' + esc(v) + '">' + esc(v) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</dd></div>';
+}
+
+async function handle(file) {
+  if (!file || !file.type.startsWith('image/')) return setStatus('Không phải file ảnh.', true);
+  $('out').innerHTML = '';
+  $('dropText').innerHTML = '<img alt="" src="' + URL.createObjectURL(file) + '">';
+  setStatus('Đang đọc…');
+  let text;
+  try { text = await decode(file); } catch { text = null; }
+  if (!text) return setStatus('Không tìm thấy QR trong ảnh. Thử ảnh rõ hơn hoặc cắt sát mã.', true);
+
+  const res = await fetch('/parse?payload=' + encodeURIComponent(text));
+  const d = await res.json();
+  if (!res.ok) {
+    setStatus('QR này không phải mã chuyển khoản (' + d.error + ').', true);
+    $('out').innerHTML = '<p class="raw">' + esc(text) + '</p>';
+    return;
+  }
+  setStatus(d.crcOk ? '' : 'Cảnh báo: mã kiểm tra (CRC) sai — QR có thể bị sửa hoặc hỏng.', !d.crcOk);
+  let h = '<dl class="rows">';
+  if (d.vietqr) {
+    h += row('Ngân hàng', d.bank ? d.bank.short_name : d.bin, d.bank ? d.bank.name + ' · ' + d.bin : 'BIN ' + d.bin);
+    if (d.acc) h += row('Số tài khoản', d.acc);
+  }
+  if (d.name) h += row('Người nhận', d.name, d.city);
+  h += row('Số tiền', d.amount ? Number(d.amount).toLocaleString('vi-VN') + ' ₫' : 'Người gửi tự nhập');
+  if (d.des) h += row('Nội dung', d.des);
+  if (!d.vietqr) h += row('Loại', 'EMV QR (không phải VietQR NAPAS)');
+  h += '</dl>';
+  if (d.vietqr && d.acc) {
+    const p = new URLSearchParams({ acc: d.acc, bank: d.bin, showinfo: '1' });
+    if (d.amount) p.set('amount', d.amount);
+    if (d.des) p.set('des', d.des);
+    h += '<div class="actions"><a href="/p?' + p + '">Mở trang QR</a><button type="button" id="copyall">Copy thông tin</button></div>';
+  }
+  h += '<p class="raw">' + esc(text) + '</p>';
+  $('out').innerHTML = h;
+  const btn = $('copyall');
+  if (btn) btn.onclick = async () => {
+    const lines = [...document.querySelectorAll('.row')].map(r => r.querySelector('dt').textContent + ': ' + r.querySelector('dd').dataset.copy);
+    try { await navigator.clipboard.writeText(lines.join('\\n')); btn.textContent = 'Đã copy'; } catch {}
+  };
+}
+
+$('out').addEventListener('click', async (e) => {
+  const dd = e.target.closest('dd[data-copy]');
+  if (dd) { try { await navigator.clipboard.writeText(dd.dataset.copy); setStatus('Đã copy: ' + dd.dataset.copy); } catch {} }
+});
+$('file').addEventListener('change', (e) => handle(e.target.files[0]));
+const drop = $('drop');
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); handle(e.dataTransfer.files[0]); });
+document.addEventListener('paste', (e) => {
+  const f = [...e.clipboardData.files].find(f => f.type.startsWith('image/'));
+  if (f) handle(f);
+});
 </script>
 </body></html>`;
 }

@@ -3,8 +3,9 @@ import { banksCsv, banksMd } from "./banks-files";
 import { stripVn } from "./memo";
 import { agentPrompt } from "./prompt";
 import { qrPng, qrSvg } from "./qr";
-import { formPage, sharePage } from "./ui";
-import { buildVietQR, parseAmount } from "./vietqr";
+import jsqrSrc from "jsqr/dist/jsQR.js";
+import { formPage, readPage, sharePage } from "./ui";
+import { buildVietQR, parseAmount, parseVietQR } from "./vietqr";
 
 const CACHE = "public, max-age=31536000, immutable";
 const PINK = "#ff2e6a";
@@ -82,6 +83,18 @@ export default {
       }
       if (url.pathname === "/banks.md") {
         return asHead(request, text(banksMd(banks), "text/markdown; charset=utf-8"));
+      }
+      if (url.pathname === "/read") {
+        return asHead(request, text(readPage(), "text/html; charset=utf-8"));
+      }
+      if (url.pathname === "/jsqr.js") {
+        return asHead(request, text(jsqrSrc, "text/javascript; charset=utf-8", { "cache-control": "public, max-age=86400" }));
+      }
+      if (url.pathname === "/parse") {
+        const r = parseVietQR(url.searchParams.get("payload") || "");
+        let bank;
+        try { bank = r.bin ? resolveBank(r.bin) : undefined; } catch {}
+        return asHead(request, json({ ...r, bank }));
       }
       if (url.pathname === "/prompt") return asHead(request, text(agentPrompt(origin)));
 

@@ -19,6 +19,8 @@ Cảnh báo Sheets “external parties” = cột `IMAGE()` tải PNG từ worke
 | Ảnh QR (PNG, Google Sheets `IMAGE()`) | `/img?format=png&acc=&bank=&amount=&des=` |
 | Trang chia sẻ (có thông tin) | `/p?...&showinfo=1` |
 | Trang chia sẻ (chỉ QR) | `/p?...&showinfo=0` |
+| Đọc QR (tải ảnh, giải mã trên máy) | `/read` |
+| Giải mã payload → JSON | `/parse?payload=` |
 | Prompt cho agent | `/prompt` — nút **Copy** trên trang chủ |
 
 `des` phải `encodeURIComponent`. Dấu `+` thành `%2B`. Bỏ dấu tiếng Việt (`á`→`a`, `đ`→`d`); không bỏ `+`.

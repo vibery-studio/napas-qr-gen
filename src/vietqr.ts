@@ -12,7 +12,7 @@ function tlv(id: string, val: string): string {
   return id + String(val.length).padStart(2, "0") + val;
 }
 
-function crc16(s: string): string {
+export function crc16(s: string): string {
   let crc = 0xffff;
   for (let i = 0; i < s.length; i++) {
     crc ^= s.charCodeAt(i) << 8;
@@ -55,4 +55,71 @@ export function parseAmount(raw: string | null): string | undefined {
   if (!raw) return undefined;
   const n = raw.replace(/[^\d]/g, "");
   return n.length ? n : undefined;
+}
+
+export type ParsedVietQR = {
+  payload: string;
+  crcOk: boolean;
+  vietqr: boolean;
+  dynamic: boolean;
+  bin?: string;
+  acc?: string;
+  service?: string;
+  amount?: string;
+  currency?: string;
+  country?: string;
+  des?: string;
+  name?: string;
+  city?: string;
+  fields: Record<string, string>;
+};
+
+function readTlv(s: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  let i = 0;
+  while (i < s.length) {
+    const id = s.slice(i, i + 2);
+    const len = Number(s.slice(i + 2, i + 4));
+    if (!/^\d{2}$/.test(id) || !Number.isInteger(len) || i + 4 + len > s.length) {
+      throw new Error(`malformed TLV at ${i}`);
+    }
+    out[id] = s.slice(i + 4, i + 4 + len);
+    i += 4 + len;
+  }
+  return out;
+}
+
+/** Parse an EMVCo/NAPAS payload. Memo returned byte-for-byte (keeps '+'). */
+export function parseVietQR(raw: string): ParsedVietQR {
+  const payload = raw.trim();
+  if (!payload.startsWith("000201")) throw new Error("not an EMV payment QR");
+  const fields = readTlv(payload);
+  const crcAt = payload.lastIndexOf("6304");
+  const crcOk = crcAt >= 0 && crcAt === payload.length - 8 &&
+    crc16(payload.slice(0, crcAt + 4)) === payload.slice(crcAt + 4).toUpperCase();
+
+  const r: ParsedVietQR = {
+    payload,
+    crcOk,
+    vietqr: false,
+    dynamic: fields["01"] === "12",
+    amount: fields["54"],
+    currency: fields["53"],
+    country: fields["58"],
+    name: fields["59"],
+    city: fields["60"],
+    fields,
+  };
+  const m = fields["38"] ? readTlv(fields["38"]) : undefined;
+  if (m?.["00"] === "A000000727") {
+    r.vietqr = true;
+    r.service = m["02"];
+    if (m["01"]) {
+      const b = readTlv(m["01"]);
+      r.bin = b["00"];
+      r.acc = b["01"];
+    }
+  }
+  if (fields["62"]) r.des = readTlv(fields["62"])["08"];
+  return r;
 }

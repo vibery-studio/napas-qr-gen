@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { qrPng } from "./qr";
-import { buildVietQR, parseAmount } from "./vietqr";
+import { buildVietQR, parseAmount, parseVietQR } from "./vietqr";
 
 describe("buildVietQR", () => {
   it("is deterministic and CRC-suffixed", () => {
@@ -42,5 +42,31 @@ describe("parseAmount", () => {
   it("strips thousand separators", () => {
     expect(parseAmount("9.600.000")).toBe("9600000");
     expect(parseAmount("")).toBeUndefined();
+  });
+});
+
+describe("parseVietQR", () => {
+  it("round-trips build output, plus signs intact", () => {
+    const des = "+BHXH+103+00+TL9365L+ 07909+ DONG BHXH+";
+    const p = buildVietQR({ bin: "970418", acc: "3159832107", amount: "9600000", des });
+    const r = parseVietQR(p);
+    expect(r).toMatchObject({
+      crcOk: true, vietqr: true, dynamic: true, bin: "970418", acc: "3159832107",
+      amount: "9600000", currency: "704", country: "VN", service: "QRIBFTTA", des,
+    });
+  });
+
+  it("flags bad CRC", () => {
+    const p = buildVietQR({ bin: "970416", acc: "0123456789" });
+    const bad = p.slice(0, -4) + (p.endsWith("0000") ? "FFFF" : "0000");
+    const r = parseVietQR(bad);
+    expect(r.crcOk).toBe(false);
+    expect(r.dynamic).toBe(false);
+    expect(r.amount).toBeUndefined();
+  });
+
+  it("rejects non-payment QR", () => {
+    expect(() => parseVietQR("https://example.com")).toThrow();
+    expect(() => parseVietQR("000201010212389")).toThrow(/malformed/);
   });
 });
